@@ -72,3 +72,13 @@ nav {
 .icon-like.liked {
   opacity: 1;
 }
+
+.btn-fetch {
+  background-color: lightgray !important;
+  border: none !important;
+  border-radius: 0 !important;
+  width: 100%;
+  padding: 15px !important;
+  color: gray !important;
+  margin-bottom: 60px;
+}

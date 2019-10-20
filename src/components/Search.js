@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import {
   Container, Row, Col,
-  Input
+  Input, Button
 } from 'reactstrap';
 import { stringify } from 'querystring';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
@@ -14,8 +14,9 @@ class Search extends Component {
       searchKey: '',
       results: [],
       limit: 8,
-      offset: 0,
       isLoading: false,
+      totalCount: 0,
+      api_key: 'a8xS4NZ33JTx6h0kQ4wYtg6zrcJWNGrY'
     }
   }
 
@@ -28,16 +29,15 @@ class Search extends Component {
       this.setState({isLoading: true});
 
       let params = {
-        api_key: 'a8xS4NZ33JTx6h0kQ4wYtg6zrcJWNGrY',
+        api_key: this.state.api_key,
         q: this.state.searchKey,
-        limit: 8,
+        limit: this.state.limit,
         offset: 0
       }
 
       fetch('http://api.giphy.com/v1/gifs/search?'+stringify(params),{method:'GET'})
       .then(response => response.json())
       .then(result => {
-        console.log(result);
         let data = result.data.map(item => {
           return({
             url: item.images.fixed_width ? item.images.fixed_width.url : '',
@@ -48,7 +48,8 @@ class Search extends Component {
         })
         this.setState({
           results: data, 
-          isLoading:false
+          isLoading:false,
+          totalCount: result.pagination.total_count
         });
       })
       .catch((err) => {
@@ -73,6 +74,40 @@ class Search extends Component {
     this.setState({results:newResults});
   }
 
+  handleFetchMore = () => {
+    this.setState({isLoading: true});
+
+    let params = {
+      api_key: this.state.api_key,
+      q: this.state.searchKey,
+      limit: this.state.limit,
+      offset: this.state.results.length
+    }
+
+    fetch('http://api.giphy.com/v1/gifs/search?'+stringify(params),{method:'GET'})
+    .then(response => response.json())
+    .then(result => {
+      let data = result.data.map(item => {
+        return({
+          url: item.images.fixed_width ? item.images.fixed_width.url : '',
+          title: item.title ? item.title : 'untitled',
+          liked: false,
+          hovered: false
+        });
+      })
+
+      let newResults = [...this.state.results, ...data];
+
+      this.setState({
+        results: newResults, 
+        isLoading: false,
+      });
+    })
+    .catch((err) => {
+      console.log(err)
+    });
+  }
+
   render() {
     return (
       <Container>
@@ -91,18 +126,29 @@ class Search extends Component {
               </Col>
             </Row>
           :
-            <Row>
+            <React.Fragment>
+              <Row>
+                {
+                  this.state.results.map((item, idx) => {
+                    return(
+                      <Col md={3} key={idx}>
+                        <img onClick={e => this.handleToggleLike(idx)} onMouseOver={e => this.handleHoverResult(idx)} onMouseOut={e => this.handleHoverResult(idx)} src={item.url} alt={item.title} className="img-result"></img>
+                        <div className={'icon-like'+(item.liked?' liked':'')+(item.hovered?' hovered':'')}><FontAwesomeIcon icon={faHeart} size="2x"/></div>
+                      </Col>
+                    );
+                  })
+                }
+              </Row>
+              <br/>
               {
-                this.state.results.map((item, idx) => {
-                  return(
-                    <Col md={3} key={idx}>
-                      <img onClick={e => this.handleToggleLike(idx)} onMouseOver={e => this.handleHoverResult(idx)} onMouseOut={e => this.handleHoverResult(idx)} src={item.url} alt={item.title} className="img-result"></img>
-                      <div className={'icon-like'+(item.liked?' liked':'')+(item.hovered?' hovered':'')}><FontAwesomeIcon icon={faHeart} size="2x"/></div>
-                    </Col>
-                  );
-                })
+                this.state.results.length < this.state.totalCount &&
+                <Row className="justify-content-center">
+                  <Col xs="auto" md={3}>
+                    <Button className="btn-fetch" onClick={this.handleFetchMore}>FETCH MORE</Button>
+                  </Col>
+                </Row>
               }
-            </Row>
+            </React.Fragment>
         }
       </Container>   
     );
