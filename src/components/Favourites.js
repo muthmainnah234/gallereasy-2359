@@ -14,7 +14,7 @@ class Favourites extends Component {
       <Container>
         <Row>
           <Col>
-            <Input placeholder="Start searching for images!"></Input>
+            
           </Col>
         </Row>  
       </Container>   
