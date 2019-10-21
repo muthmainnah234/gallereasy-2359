@@ -1,12 +1,21 @@
 import React, {Component} from 'react';
 import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom';
-import { Container, Row, Col } from 'reactstrap';
 import Search from './components/Search';
 import Favourites from './components/Favourites';
 
 class App extends Component {
+  static likedItems = [];
+
   constructor(props) {
     super(props);
+  }
+
+  addLikedItem = (item) => {
+    App.likedItems = [...App.likedItems, item];
+  }
+
+  removeLikedItem = (id) => {
+    App.likedItems = App.likedItems.filter(item => item.id != id);
   }
 
   render() {
@@ -31,8 +40,8 @@ class App extends Component {
           </nav>
           <br/>
           <Switch>
-            <Route exact path='/' component={Search} />
-            <Route path='/favourites' component={Favourites} />
+            <Route exact path='/' component={() => <Search addLikedItem={this.addLikedItem} removeLikedItem={this.removeLikedItem}/>} />
+            <Route path='/favourites' component={() => <Favourites />} />
           </Switch>
           <div className="footer">
             <span>Gallereasy POC web app</span>

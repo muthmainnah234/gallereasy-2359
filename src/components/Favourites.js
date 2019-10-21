@@ -1,8 +1,8 @@
 import React, {Component} from 'react';
 import {
   Container, Row, Col,
-  Input
 } from 'reactstrap';
+import App from '../App';
 
 class Favourites extends Component {
   constructor(props) {
@@ -13,10 +13,16 @@ class Favourites extends Component {
     return (
       <Container>
         <Row>
-          <Col>
-            
-          </Col>
-        </Row>  
+          {
+            App.likedItems.map((item, idx) => {
+              return(
+                <Col md={3} key={idx}>
+                  <img src={item.url} alt={item.title} className="img-result"></img>
+                </Col>
+              );
+            })
+          }
+        </Row>
       </Container>   
     );
   }

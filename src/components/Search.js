@@ -6,6 +6,7 @@ import {
 import { stringify } from 'querystring';
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
 import {faHeart} from '@fortawesome/free-solid-svg-icons';
+import App from '../App';
 
 class Search extends Component {
   constructor(props) {
@@ -18,6 +19,7 @@ class Search extends Component {
       totalCount: 0,
       api_key: 'a8xS4NZ33JTx6h0kQ4wYtg6zrcJWNGrY'
     }
+    this.likedIds = App.likedItems.map(item => item.id);
   }
 
   handleFormChange = (e) => {
@@ -40,9 +42,10 @@ class Search extends Component {
       .then(result => {
         let data = result.data.map(item => {
           return({
+            id: item.id,
             url: item.images.fixed_width ? item.images.fixed_width.url : '',
             title: item.title ? item.title : 'untitled',
-            liked: false,
+            liked: this.likedIds.includes(item.id) ? true : false,
             hovered: false
           });
         })
@@ -63,7 +66,15 @@ class Search extends Component {
 
     newResults[idx].liked = !newResults[idx].liked;
 
-    this.setState({results:newResults});
+    this.setState({results:newResults},() => {
+      var target = newResults[idx];
+
+      if (target.liked) {
+        this.props.addLikedItem(target);
+      } else {
+        this.props.removeLikedItem(target.id);
+      }
+    });
   }
 
   handleHoverResult = (idx) => {
@@ -89,9 +100,10 @@ class Search extends Component {
     .then(result => {
       let data = result.data.map(item => {
         return({
+          id: item.id,
           url: item.images.fixed_width ? item.images.fixed_width.url : '',
           title: item.title ? item.title : 'untitled',
-          liked: false,
+          liked: this.likedIds.includes(item.id) ? true : false,
           hovered: false
         });
       })
